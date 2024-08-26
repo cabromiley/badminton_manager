@@ -1,7 +1,7 @@
 # .air.toml
 [build]
   # These are the files and directories to watch for changes
-  include_dir = ["."]
+  include_dir = ["main", "handlers", "models","utils", "db", "templates"]
   exclude_dir = ["vendor", "tmp", "logs"]
   include_ext = ["go", "html", "css", "js"]
 

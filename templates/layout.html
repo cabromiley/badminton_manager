@@ -1,0 +1,34 @@
+<!-- templates/layout.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{block "title" .}}My Go Application{{end}}</title>
+    <link href="/static/css/tailwind.css" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.8.5"></script>
+</head>
+<body class="bg-gray-100">
+    <header class="bg-blue-600 text-white p-4">
+        <h1 class="text-3xl">My Go Application</h1>
+    </header>
+
+    <main id="content" class="container mx-auto p-4">
+        {{block "content" .}}
+        {{if eq .Page "index"}}
+            {{template "Index.html" .}}
+        {{else if eq .Page "show"}}
+            {{template "Show.html" .}}
+        {{else if eq .Page "new"}}
+            {{template "New.html" .}}
+        {{else if eq .Page "edit"}}
+            {{template "Edit.html" .}}
+        {{end}}
+        {{end}}
+    </main>
+
+    <footer class="bg-gray-800 text-white p-4 text-center">
+        <p>&copy; 2024 My Go Application</p>
+    </footer>
+</body>
+</html>
