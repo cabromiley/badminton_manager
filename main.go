@@ -2,10 +2,10 @@ package main
 
 import (
 	"database/sql"
-	"html/template"
 	"log"
 	"net/http"
 	"strconv"
+	"text/template"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -19,15 +19,12 @@ type User struct {
 	Email string
 }
 
-var db *sql.DB
-
-func initDB() {
-	var err error
-	db, err = sql.Open("sqlite3", "./users.db")
+// InitDB initializes the database connection and returns a *sql.DB
+func InitDB(dataSourceName string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", dataSourceName)
 	if err != nil {
-		log.Fatal("Failed to connect to the database:", err)
+		return nil, err
 	}
-	log.Println("Database connection established")
 
 	createTableSQL := `CREATE TABLE IF NOT EXISTS users (
 		"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -37,31 +34,43 @@ func initDB() {
 
 	_, err = db.Exec(createTableSQL)
 	if err != nil {
-		log.Fatal("Failed to create table:", err)
+		return nil, err
 	}
-	log.Println("Table 'users' ensured to exist")
+
+	log.Println("Database initialized successfully")
+	return db, nil
 }
 
 func main() {
-	initDB()
+	db, err := InitDB("./users.db")
+	if err != nil {
+		log.Fatal("Failed to initialize the database:", err)
+	}
 	defer db.Close()
-	log.Println("Database connection closed on exit")
 
+	// Pass the database connection to your handlers
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	http.HandleFunc("/", Index)
-	http.HandleFunc("/show", Show)
-	http.HandleFunc("/new", New)
-	http.HandleFunc("/edit", Edit)
-	http.HandleFunc("/insert", Insert)
-	http.HandleFunc("/update", Update)
-	http.HandleFunc("/delete", Delete)
+	http.HandleFunc("/", withDB(Index, db))
+	http.HandleFunc("/show", withDB(Show, db))
+	http.HandleFunc("/new", withDB(New, db))
+	http.HandleFunc("/edit", withDB(Edit, db))
+	http.HandleFunc("/insert", withDB(Insert, db))
+	http.HandleFunc("/update", withDB(Update, db))
+	http.HandleFunc("/delete", withDB(Delete, db))
 
 	log.Println("Server started at :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
+// withDB is a helper function that injects the db connection into the handler functions
+func withDB(handler func(http.ResponseWriter, *http.Request, *sql.DB), db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		handler(w, r, db)
+	}
+}
+
 // Index handler to list users
-func Index(w http.ResponseWriter, r *http.Request) {
+func Index(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	log.Println("Handling Index request")
 	rows, err := db.Query("SELECT * FROM users")
 	if err != nil {
@@ -87,7 +96,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 }
 
 // Show handler to show a single user
-func Show(w http.ResponseWriter, r *http.Request) {
+func Show(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	id := r.URL.Query().Get("id")
 	log.Printf("Handling Show request for user ID: %s", id)
 	row := db.QueryRow("SELECT * FROM users WHERE id = ?", id)
@@ -96,6 +105,8 @@ func Show(w http.ResponseWriter, r *http.Request) {
 	err := row.Scan(&user.ID, &user.Name, &user.Email)
 	if err != nil {
 		log.Println("Failed to retrieve user:", err)
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
 	}
 
 	err = tmpl.ExecuteTemplate(w, "Show", user)
@@ -105,7 +116,7 @@ func Show(w http.ResponseWriter, r *http.Request) {
 }
 
 // New handler to render the form for creating a new user
-func New(w http.ResponseWriter, r *http.Request) {
+func New(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	log.Println("Handling New request")
 	err := tmpl.ExecuteTemplate(w, "New", nil)
 	if err != nil {
@@ -114,7 +125,7 @@ func New(w http.ResponseWriter, r *http.Request) {
 }
 
 // Edit handler to render the form for editing an existing user
-func Edit(w http.ResponseWriter, r *http.Request) {
+func Edit(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	id := r.URL.Query().Get("id")
 	log.Printf("Handling Edit request for user ID: %s", id)
 	row := db.QueryRow("SELECT * FROM users WHERE id = ?", id)
@@ -123,6 +134,8 @@ func Edit(w http.ResponseWriter, r *http.Request) {
 	err := row.Scan(&user.ID, &user.Name, &user.Email)
 	if err != nil {
 		log.Println("Failed to retrieve user for editing:", err)
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
 	}
 
 	err = tmpl.ExecuteTemplate(w, "Edit", user)
@@ -132,7 +145,7 @@ func Edit(w http.ResponseWriter, r *http.Request) {
 }
 
 // Insert handler to insert a new user
-func Insert(w http.ResponseWriter, r *http.Request) {
+func Insert(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	if r.Method == "POST" {
 		name := r.FormValue("name")
 		email := r.FormValue("email")
@@ -164,7 +177,7 @@ func Insert(w http.ResponseWriter, r *http.Request) {
 }
 
 // Update handler to update an existing user
-func Update(w http.ResponseWriter, r *http.Request) {
+func Update(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	if r.Method == "POST" {
 		id, _ := strconv.Atoi(r.FormValue("id"))
 		name := r.FormValue("name")
@@ -191,7 +204,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 }
 
 // Delete handler to delete a user
-func Delete(w http.ResponseWriter, r *http.Request) {
+func Delete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	id := r.URL.Query().Get("id")
 	log.Printf("Handling Delete request for user ID: %s", id)
 
