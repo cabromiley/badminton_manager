@@ -1,0 +1,22 @@
+{{define "Show"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Show User</title>
+    <link href="/static/css/tailwind.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-8">
+        <h1 class="text-3xl font-bold mb-4">Show User</h1>
+        <div class="bg-white shadow-md rounded p-6 mb-4">
+            <p class="text-gray-700 text-lg"><strong>ID:</strong> {{.ID}}</p>
+            <p class="text-gray-700 text-lg"><strong>Name:</strong> {{.Name}}</p>
+            <p class="text-gray-700 text-lg"><strong>Email:</strong> {{.Email}}</p>
+        </div>
+        <a href="/" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Back</a>
+    </div>
+</body>
+</html>
+{{end}}

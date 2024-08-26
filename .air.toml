@@ -1,0 +1,12 @@
+# .air.toml
+[build]
+  # These are the files and directories to watch for changes
+  include_dir = ["."]
+  exclude_dir = ["vendor", "tmp", "logs"]
+  include_ext = ["go", "html", "css", "js"]
+
+[log]
+  # You can enable or disable colors in the output
+  color = true
+  # Log level, could be "debug", "info", "warn", "error"
+  level = "debug"
