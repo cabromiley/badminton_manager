@@ -3,3 +3,5 @@ node_modules
 
 static/css/tailwind.css
 users.db
+
+tmp
