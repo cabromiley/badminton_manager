@@ -7,6 +7,7 @@ import (
 )
 
 // Session store
+// @TODO make secret an env and use an actual key
 var Store = sessions.NewCookieStore([]byte("your-secret-key"))
 
 func AuthMiddleware(handler func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
