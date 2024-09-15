@@ -14,25 +14,6 @@ import (
 
 var tmpl = template.Must(template.ParseGlob("templates/*"))
 
-// WithDB is a helper function that injects the db connection into the handler functions
-func WithDB(handler func(http.ResponseWriter, *http.Request, *sql.DB), db *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		handler(w, r, db)
-	}
-}
-
-func AuthMiddleware(handler func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		session, _ := store.Get(r, "session")
-		if auth, ok := session.Values["authenticated"].(bool); !ok || !auth {
-			// If the user is not authenticated, redirect to the login page
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
-		}
-		handler(w, r)
-	}
-}
-
 // Index handler to list users
 func Index(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	log.Println("Handling Index request")

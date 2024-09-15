@@ -6,6 +6,7 @@ import (
 
 	"cabromiley.classes/db"
 	"cabromiley.classes/handlers"
+	"cabromiley.classes/middleware"
 	"github.com/gorilla/mux"
 )
 
@@ -18,15 +19,15 @@ func main() {
 
 	r := mux.NewRouter()
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	r.HandleFunc("/", handlers.AuthMiddleware(handlers.WithDB(handlers.Index, database)))
-	r.HandleFunc("/user/{id}", handlers.WithDB(handlers.ShowUserByID, database)) // Route with dynamic ID
-	r.HandleFunc("/new", handlers.WithDB(handlers.New, database))
-	r.HandleFunc("/edit/{id}", handlers.WithDB(handlers.Edit, database))
-	r.HandleFunc("/insert", handlers.WithDB(handlers.Insert, database))
-	r.HandleFunc("/update", handlers.WithDB(handlers.Update, database))
-	r.HandleFunc("/delete/{id}", handlers.WithDB(handlers.Delete, database))
-	r.HandleFunc("/register", handlers.WithDB(handlers.Register, database))
-	r.HandleFunc("/login", handlers.WithDB(handlers.Login, database))
+	r.HandleFunc("/", middleware.AuthMiddleware(middleware.WithDB(handlers.Index, database)))
+	r.HandleFunc("/user/{id}", middleware.WithDB(handlers.ShowUserByID, database)) // Route with dynamic ID
+	r.HandleFunc("/new", middleware.WithDB(handlers.New, database))
+	r.HandleFunc("/edit/{id}", middleware.WithDB(handlers.Edit, database))
+	r.HandleFunc("/insert", middleware.WithDB(handlers.Insert, database))
+	r.HandleFunc("/update", middleware.WithDB(handlers.Update, database))
+	r.HandleFunc("/delete/{id}", middleware.WithDB(handlers.Delete, database))
+	r.HandleFunc("/register", middleware.WithDB(handlers.Register, database))
+	r.HandleFunc("/login", middleware.WithDB(handlers.Login, database))
 	r.HandleFunc("/logout", handlers.Logout).Methods("GET")
 
 	log.Println("Server started at :8080")
