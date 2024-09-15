@@ -79,7 +79,7 @@ func ShowUserByID(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	row := db.QueryRow("SELECT * FROM users WHERE id = ?", id)
 
 	var user models.User
-	err := row.Scan(&user.ID, &user.Name, &user.Email)
+	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role)
 	if err != nil {
 		log.Println("Failed to retrieve user:", err)
 		http.Error(w, "User not found", http.StatusNotFound)
@@ -131,7 +131,7 @@ func Edit(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	row := db.QueryRow("SELECT * FROM users WHERE id = ?", id)
 
 	var user models.User
-	err := row.Scan(&user.ID, &user.Name, &user.Email)
+	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role)
 	if err != nil {
 		log.Println("Failed to retrieve user for editing:", err)
 		http.Error(w, "User not found", http.StatusNotFound)
