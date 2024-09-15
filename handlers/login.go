@@ -39,7 +39,8 @@ func Login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		// Query the user by email
 		var hashedPassword string
 		var name string
-		err := db.QueryRow("SELECT name, password FROM users WHERE email = ?", email).Scan(&name, &hashedPassword)
+		var id int
+		err := db.QueryRow("SELECT id, name, password FROM users WHERE email = ?", email).Scan(&id, &name, &hashedPassword)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				http.Error(w, "Invalid email or password", http.StatusUnauthorized)
@@ -60,7 +61,7 @@ func Login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		// Create a session and store user information
 		session, _ := middleware.Store.Get(r, "session")
 		session.Values["authenticated"] = true
-		session.Values["user"] = name
+		session.Values["user"] = id
 		err = session.Save(r, w)
 		if err != nil {
 			log.Println("Failed to save session:", err)
