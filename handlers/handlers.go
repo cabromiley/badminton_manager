@@ -22,9 +22,7 @@ func WithDB(handler func(http.ResponseWriter, *http.Request, *sql.DB), db *sql.D
 }
 
 func AuthMiddleware(handler func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
-	log.Println("middleware")
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Here")
 		session, _ := store.Get(r, "session")
 		if auth, ok := session.Values["authenticated"].(bool); !ok || !auth {
 			// If the user is not authenticated, redirect to the login page

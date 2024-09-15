@@ -13,12 +13,24 @@ import (
 func Register(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	if r.Method == "GET" {
 		// Serve the registration form
-		err := tmpl.ExecuteTemplate(w, "layout.html", map[string]interface{}{
-			"Page": "Register",
-		})
-		if err != nil {
-			log.Println("Failed to render template for registration form:", err)
+		if r.Header.Get("HX-Request") != "" {
+			err := tmpl.ExecuteTemplate(w, "Register.html", map[string]interface{}{
+				"Page": "Register",
+			})
+
+			if err != nil {
+				log.Println("Failed to render template for registration form:", err)
+			}
+		} else {
+			err := tmpl.ExecuteTemplate(w, "layout.html", map[string]interface{}{
+				"Page": "Register",
+			})
+
+			if err != nil {
+				log.Println("Failed to render template for registration form:", err)
+			}
 		}
+
 	} else if r.Method == "POST" {
 		// Handle form submission
 		name := r.FormValue("name")

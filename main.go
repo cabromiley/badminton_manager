@@ -27,6 +27,7 @@ func main() {
 	r.HandleFunc("/delete/{id}", handlers.WithDB(handlers.Delete, database))
 	r.HandleFunc("/register", handlers.WithDB(handlers.Register, database))
 	r.HandleFunc("/login", handlers.WithDB(handlers.Login, database))
+	r.HandleFunc("/logout", handlers.Logout).Methods("GET")
 
 	log.Println("Server started at :8080")
 	log.Fatal(http.ListenAndServe(":8080", r))

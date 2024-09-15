@@ -77,3 +77,14 @@ func Login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
+
+// Logout handler - clears the session and logs the user out
+func Logout(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "session")
+	// Set the authenticated value to false and save the session
+	session.Values["authenticated"] = false
+	session.Save(r, w)
+
+	// Redirect to the login page
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
