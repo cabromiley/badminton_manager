@@ -9,6 +9,7 @@ import (
 	"cabromiley.classes/models"
 	"cabromiley.classes/utils"
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Index handler to list users
@@ -134,6 +135,8 @@ func Insert(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	if r.Method == "POST" {
 		name := r.FormValue("name")
 		email := r.FormValue("email")
+		// temp code until i expand further
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte("temp#123"), bcrypt.DefaultCost)
 		log.Printf("Handling Insert request - Name: %s, Email: %s", name, email)
 
 		if !utils.IsValidEmail(email) {
@@ -142,13 +145,13 @@ func Insert(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			return
 		}
 
-		stmt, err := db.Prepare("INSERT INTO users(name, email) VALUES(?, ?)")
+		stmt, err := db.Prepare("INSERT INTO users(name, email, password, role) VALUES(?, ?, ?, ?)")
 		if err != nil {
 			log.Fatal("Failed to prepare insert statement:", err)
 		}
 		defer stmt.Close()
 
-		_, err = stmt.Exec(name, email)
+		_, err = stmt.Exec(name, email, hashedPassword, "player")
 		if err != nil {
 			log.Fatal("Failed to execute insert statement:", err)
 		}
