@@ -23,6 +23,10 @@
             {{template "New.html" .}}
         {{else if eq .Page "edit"}}
             {{template "Edit.html" .}}
+        {{else if eq .Page "Register"}}
+            {{template "Register.html"}}
+        {{else if eq .Page "Login"}}
+            {{template "Login.html"}}
         {{end}}
         {{end}}
     </main>

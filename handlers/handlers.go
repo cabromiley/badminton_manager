@@ -21,6 +21,20 @@ func WithDB(handler func(http.ResponseWriter, *http.Request, *sql.DB), db *sql.D
 	}
 }
 
+func AuthMiddleware(handler func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
+	log.Println("middleware")
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Here")
+		session, _ := store.Get(r, "session")
+		if auth, ok := session.Values["authenticated"].(bool); !ok || !auth {
+			// If the user is not authenticated, redirect to the login page
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+		handler(w, r)
+	}
+}
+
 // Index handler to list users
 func Index(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	log.Println("Handling Index request")
@@ -33,7 +47,7 @@ func Index(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	users := []models.User{}
 	for rows.Next() {
 		var user models.User
-		err := rows.Scan(&user.ID, &user.Name, &user.Email)
+		err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role)
 		if err != nil {
 			log.Fatal("Failed to scan user row:", err)
 		}
